@@ -12,9 +12,12 @@ class TCPSockServer(threading.Thread):
     def run(self):
         self.sock.listen(5)
         while True:
-            client, _ = self.sock.accept()
-            client.settimeout(60)
-            threading.Thread(target=self.listenToClient, args=(client,)).start()
+            try:
+                client, _ = self.sock.accept()
+                client.settimeout(60)
+                threading.Thread(target=self.listenToClient, args=(client,)).start()
+            except:
+                break
 
     def listenToClient(self, conn):
         while True:
@@ -23,6 +26,10 @@ class TCPSockServer(threading.Thread):
                 break
             conn.sendall(data)
         conn.close()
+    
+    def close(self):
+        print("server shuted down")
+        self.sock.close()
 
 
 class TCPSockClient(threading.Thread):

@@ -9,5 +9,8 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     terminal = Terminal('localhost', 8585)
-    terminal.show()
-    sys.exit(app.exec_())
+    try:
+        terminal.show()
+        sys.exit(app.exec_())
+    except:
+        tcp_server.close()
