@@ -1,11 +1,13 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPlainTextEdit, QLineEdit, QPushButton, QLabel
 import subprocess
 import os
+from tcpsock import TCPSockClient
 
 class Terminal(QWidget):
-    def __init__(self):
+    def __init__(self, tcp_server_host, tcp_socket_port):
         super().__init__()
         self.working_dir = os.getcwd()
+        self.tcp_server_address = (tcp_server_host, tcp_socket_port)
         self.initUI()
 
     def initUI(self):
@@ -17,8 +19,10 @@ class Terminal(QWidget):
         self.output.setReadOnly(True)
         self.input = QLineEdit()
         self.button = QPushButton('Run')
-        self.path = QLabel()
+        self.path = QLineEdit()
         self.path.setText(self.working_dir)
+        self.path.setMinimumWidth(200)
+        self.path.setReadOnly(True)
 
         # Create layout
         vbox = QVBoxLayout()
@@ -70,6 +74,11 @@ class Terminal(QWidget):
         res = self.runCMD(cmd)
         self.append_text(cmd)
         self.append_text(res if res else '\n')
+        self.send_over_tcp(f"command: {cmd}, result: {res if res else 'no result'}")
+    
+    def send_over_tcp(self, text):
+        cli = TCPSockClient(self.tcp_server_address[0], self.tcp_server_address[1], text)
+        cli.start()
 
     def append_text(self, text):
         self.output.appendPlainText(text)
