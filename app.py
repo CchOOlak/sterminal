@@ -13,4 +13,5 @@ if __name__ == '__main__':
         terminal.show()
         sys.exit(app.exec_())
     except:
+        terminal.close_threads()
         tcp_server.close()

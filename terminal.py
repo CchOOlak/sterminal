@@ -2,12 +2,31 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPlainTextEdit, Q
 import subprocess
 import os
 from tcpsock import TCPSockClient
+import threading
+import time
+
+class CheckDirectoryThread(threading.Thread):
+    def __init__(self, path):
+        self.path = path
+        self.parent = True
+        super(CheckDirectoryThread, self).__init__()
+    
+    def run(self):
+        while self.parent and self.path == os.getcwd():
+            time.sleep(3)
+            print(f"Directory check: {self.path}")
+        if not self.parent:
+            print("end")
+            return
+        print(f"Directory check error !")
 
 class Terminal(QWidget):
     def __init__(self, tcp_server_host, tcp_socket_port):
         super().__init__()
         self.working_dir = os.getcwd()
         self.tcp_server_address = (tcp_server_host, tcp_socket_port)
+        self.directory_check_thread = CheckDirectoryThread(self.working_dir)
+        self.directory_check_thread.start()
         self.initUI()
 
     def initUI(self):
@@ -82,3 +101,6 @@ class Terminal(QWidget):
 
     def append_text(self, text):
         self.output.appendPlainText(text)
+    
+    def close_threads(self):
+        self.directory_check_thread.parent = False
